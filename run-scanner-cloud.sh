@@ -165,7 +165,7 @@ optional_timeout_and_submit()
 {
     OPTIONAL_TS=""
 
-    if [ ! -z "${RL_TIMEOUT}"
+    if [ ! -z "${RL_TIMEOUT}" ]
     then
         # we will not handle ant min, max or default here,
         # those can change based on rl-scanner-cloud
@@ -181,7 +181,7 @@ optional_timeout_and_submit()
         fi
     fi
 
-    if [ ! -z "${RL_SUBMIT_ONLY}"
+    if [ ! -z "${RL_SUBMIT_ONLY}" ]
     then
         # convert strings true/false
         local val=$( convert_bool "${RL_SUBMIT_ONLY}")
