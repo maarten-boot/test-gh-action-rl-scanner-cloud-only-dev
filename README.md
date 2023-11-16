@@ -138,9 +138,6 @@ The workflow checks out your repository, builds an artifact, uses the `rl-scanne
       pull_request:
         branches: [ "main" ]
 
-    env:
-      ReportDirectory: MyReportDir
-
     jobs:
       checkout-build-scan-simple:
         # runs-on: self-hosted
