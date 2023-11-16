@@ -25,7 +25,7 @@ convert_int()
     # the defaul 0 will be returned on fail
 
     what=$( convert_int_may_fail "$1" 2>/dev/null )
-    echo $what
+    echo "${what}"
 }
 
 convert_bool()
@@ -175,7 +175,7 @@ optional_timeout_and_submit()
             convert_int "${RL_TIMEOUT}"
         )
 
-        if [ "$val" != "0" ]
+        if [ "${val}" != "0" ]
         then
             OPTIONAL_TS="${OPTIONAL_TS} --timeout ${val}"
         fi
@@ -186,10 +186,15 @@ optional_timeout_and_submit()
         # convert strings true/false
         local val=$( convert_bool "${RL_SUBMIT_ONLY}")
         # if true then specify '--submit-only' otherwise specify ''
-        if [ "${}" == "True" ]
+        if [ "${val}" == "True" ]
         then
             OPTIONAL_TS="${OPTIONAL_TS} --submit-only"
         fi
+    fi
+
+    if [ "${RL_VERBOSE}" != "false" ]
+    then
+        echo "OPTIONAL_TS='${OPTIONAL_TS}'"
     fi
 }
 
