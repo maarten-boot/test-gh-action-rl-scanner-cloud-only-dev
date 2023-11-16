@@ -11,7 +11,7 @@ If you're looking for a solution with more functionality out-of-the-box, try the
 
 ## What is the secure.software Portal?
 
-The secure.software Portal is a SaaS solution that's part of the [secure.software platform](https://www.secure.software/) - a new ReversingLabs solution for software supply chain security. 
+The secure.software Portal is a SaaS solution that's part of the [secure.software platform](https://www.secure.software/) - a new ReversingLabs solution for software supply chain security.
 More specifically, the Portal is a web-based application for improving and managing the security of your software releases and verifying third-party software used in your organization.
 
 With the secure.software Portal, you can:
@@ -33,7 +33,7 @@ The path must be relative to the root of the GitHub repository.
 
 When called, the action runs a set of commands that pull the latest version of the `reversinglabs/rl-scanner-cloud` Docker image.
 The container connects to a Portal instance and uploads the specified build artifact for analysis.
-On the Portal, the artifact is added as a package version to a new or an existing project and package. 
+On the Portal, the artifact is added as a package version to a new or an existing project and package.
 When the security scan is done, the container automatically shuts down, and the action outputs the analysis result as a status message (PASS, FAIL, ERROR).
 
 Portal users can then view the analysis report and [manage the analyzed file](https://docs.secure.software/portal/projects#work-with-package-versions-releases) from the Portal web interface or via the Portal Public APIs like any other package version.
@@ -41,8 +41,8 @@ Portal users can then view the analysis report and [manage the analyzed file](ht
 
 ## Requirements
 
-1. **An active secure.software Portal account and a Personal Access Token generated for it.** If you don't already have a Portal account, you may need to contact the administrator of your Portal organization to [invite you](https://docs.secure.software/portal/members#invite-a-new-member). 
-Alternatively, if you're not a secure.software customer yet, you can [contact ReversingLabs](https://docs.secure.software/portal/#get-access-to-securesoftware-portal) to sign up for a Portal account. 
+1. **An active secure.software Portal account and a Personal Access Token generated for it.** If you don't already have a Portal account, you may need to contact the administrator of your Portal organization to [invite you](https://docs.secure.software/portal/members#invite-a-new-member).
+Alternatively, if you're not a secure.software customer yet, you can [contact ReversingLabs](https://docs.secure.software/portal/#get-access-to-securesoftware-portal) to sign up for a Portal account.
 When you have an account set up, follow the instructions to [generate a Personal Access Token](https://docs.secure.software/api/generate-api-token).
 
 
@@ -69,25 +69,25 @@ ReversingLabs strongly recommends [defining secrets](https://docs.github.com/en/
 
 The most common use-case for this action is to add it to the "test" stage in a workflow, after the build artifact has been created.
 
-To use the Portal security scanning functionality, an active account on a Portal instance is required, together with a Personal Access Token for Portal API authentication. 
+To use the Portal security scanning functionality, an active account on a Portal instance is required, together with a Personal Access Token for Portal API authentication.
 
 
 ## Compare artifacts
 
 To compare a new version of an artifact against a previously scanned version, you can use the `rl-diff-with` parameter when scanning the new version.
 Both versions must be in the same Portal project and package.
-This comparison is also known as the **diff scan**. 
+This comparison is also known as the **diff scan**.
 
 To perform the diff scan, specify the package URL (PURL) of the previously scanned version with the `rl-diff-with` parameter.
 The action will verify that the requested artifact version was actually scanned before on the Portal, and ignore the request for a diff scan if there are no results for the requested PURL.
 
-After a successful diff scan, the analysis report of the new artifact version will contain the Diff tab with all the differences between the two versions. 
+After a successful diff scan, the analysis report of the new artifact version will contain the Diff tab with all the differences between the two versions.
 In the Portal web interface, the new version will be marked as "Derived" from the previous version.
 
 
 ## Optional proxy configuration
 
-In some cases, proxy configuration may be required to access the internet and connect to a secure.software Portal instance. 
+In some cases, proxy configuration may be required to access the internet and connect to a secure.software Portal instance.
 You can configure proxy settings with the `rl-proxy-*` parameters for any self-hosted runner, including local GitHub Enterprise setups.
 
 When using the `rl-proxy-server` parameter, you must also specify the port with `rl-proxy-port`.
@@ -128,66 +128,74 @@ The following example is a basic GitHub workflow that runs on pull requests (PRs
 
 The workflow checks out your repository, builds an artifact, uses the `rl-scanner-cloud-only` GitHub action to scan the artifact on the secure.software Portal, and outputs the analysis results.
 
-```
-name: ReversingLabs rl-scanner-cloud
-run-name: rl-scanner-cloud-only
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    name: ReversingLabs rl-scanner-cloud only
+    run-name: test scanner-cloud only
 
-jobs:
-  checkout-build-scan-only:
-    runs-on: ubuntu-latest
+    on:
+      push:
+        branches: [ "main" ]
+      pull_request:
+        branches: [ "main" ]
 
-    permissions:
-      statuses: write
-      pull-requests: write
+    env:
+      ReportDirectory: MyReportDir
 
-    steps:
-      # Need to check out data before we can do anything
-      - uses: actions/checkout@v3
+    jobs:
+      checkout-build-scan-simple:
+        # runs-on: self-hosted
+        runs-on: ubuntu-latest
+        permissions:
+          statuses: write
+          pull-requests: write
 
-      # Replace this with your build process
-      # Need to produce one file as the build artifact in scanfile=<relative file path>
-      - name: Create build artifact
-        id: build
+        steps:
+          # -------------------------------------
+          # we will have to checkout data before we can do anything
+          - uses: actions/checkout@v3
 
-        shell: bash
+          # -------------------------------------
+          # build someting, replace this with your build process
+          # produces one filename as output in scanfile=<relative file path>
+          - name: Build
+            id: build
 
-        run: |
-          # Prepare the build process
-          python3 -m pip install --upgrade pip
-          pip install example
-          python3 -m pip install --upgrade build
-          # Run the build
-          python3 -m build
-          # Produce a single artifact to scan and set the scanfile output parameter
-          echo "scanfile=$( ls dist/*.whl )" >> $GITHUB_OUTPUT
+            shell: bash
 
-      # Use the rl-scanner-cloud-only action
-      - name: Scan build artifact on the Portal
-        id: rl-scan
+            run: |
+              # prepare the build process
+              python3 -m pip install --upgrade pip
+              pip install hatchling
+              python3 -m pip install --upgrade build
+              # make the actual build
+              python3 -m build
+              # produce a single artifact to scan and set the scanfile output variable
+              echo "scanfile=$( ls dist/*.whl )" >> $GITHUB_OUTPUT
 
-        env:
-          RLPORTAL_ACCESS_TOKEN: ${{ secrets.RLPORTAL_ACCESS_TOKEN }}
+          # -------------------------------------
+          - name: ReversingLabs apply rl-scanner to the build artifact
+            id: rl-scan
 
-        uses: reversinglabs/gh-action-rl-scanner-cloud-only@v1
+            env:
+              RLPORTAL_ACCESS_TOKEN: ${{ secrets.RLPORTAL_ACCESS_TOKEN }}
 
-        with:
-          artifact-to-scan: ${{ steps.build.outputs.scanfile }}
-          
-      # Display analysis result in the output
-      - name: Show the scan status 
-        id: rl-scan-status
-      
-        if: success() || failure()
-        run: |
-          echo "The status is: '${{ steps.scan.outputs.status }}'"
-          echo "The description is: '${{ steps.scan.outputs.description }}'"
-```
+            uses: maarten-boot/test-gh-action-rl-scanner-cloud-only-dev@v1.0.2
+            with:
+              rl-verbose: true
+              rl-portal-server: guidedTour
+              rl-portal-org: ReversingLabs
+              rl-portal-group: Demo
+              rl-timeout: 1
+              rl-submit-only: false
+              artifact-to-scan: ${{ steps.build.outputs.scanfile }}
+              rl-package-url: mboot/test-gh-action-only-dev@v1.0.2
+              rl-diff-with: v1.0.0
+
+          - name: report the scan status
+            if: success() || failure()
+            run: |
+              echo "The status is: '${{ steps.rl-scan.outputs.status }}'"
+              echo "The description is: '${{ steps.rl-scan.outputs.description }}'"
 
 
 # Limitations
