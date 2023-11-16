@@ -81,10 +81,10 @@ inputs:
 outputs:
   description:
     description: 'The result of the action: a string terminating in FAIL or PASS'
-    value: ${{ steps.rl-scanner.outputs.description }}
+    value: ${{ steps.rl-scanner-cloud.outputs.description }}
   status:
     description: 'The single word result of the action: success, failure or error'
-    value: ${{ steps.rl-scanner.outputs.status }}
+    value: ${{ steps.rl-scanner-cloud.outputs.status }}
 
 runs:
   using: "composite"
@@ -92,8 +92,8 @@ runs:
     - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
       shell: bash
 
-    - id: rl-scanner
-      run: ${{ github.action_path }}/run-scanner.sh
+    - id: rl-scanner-cloud
+      run: ${{ github.action_path }}/run-scanner-cloud.sh
       shell: bash
       env: # we expect RLPORTAL_ACCESS_TOKEN to be set in the environment
         RL_VERBOSE: ${{ inputs.rl-verbose }}
