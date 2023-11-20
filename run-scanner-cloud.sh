@@ -122,6 +122,11 @@ validate_mandatory_params()
 
 prep_report()
 {
+    if [ -z "${REPORT_PATH}" ]
+    then
+        return 0
+    fi
+
     if [ -d "${REPORT_PATH}" ]
     then
         if rmdir "${REPORT_PATH}"
@@ -134,6 +139,11 @@ prep_report()
     fi
 
     mkdir -p "${REPORT_PATH}"
+
+    if [ "${RL_VERBOSE}" != "false" ]
+    then
+        ls -l "${REPORT_PATH}"
+    fi
 }
 
 prep_paths()
@@ -236,7 +246,7 @@ scan_with_portal()
     if [ "$R_PATH" != "" ]
     then
         REPORT_VOLUME="-v ${R_PATH}/:/reports"
-        WITH_REPORT="--report-path=/report --report-format=all "
+        WITH_REPORT="--report-path=/reports --report-format=all "
     fi
 
     docker run --rm -u $(id -u):$(id -g) \
